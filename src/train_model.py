@@ -1,5 +1,5 @@
-from sklearn.linear_model import TweedieRegressor, Ridge, Lasso, ElasticNet, BayesianRidge
-from sklearn.linear_model import ARDRegression, SGDRegressor, PassiveAggressiveRegressor, HuberRegressor
+from sklearn.linear_model import Ridge, Lasso, ElasticNet, BayesianRidge, ARDRegression
+from sklearn.linear_model import SGDRegressor, PassiveAggressiveRegressor, HuberRegressor
 from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor, BaggingRegressor, ExtraTreesRegressor, GradientBoostingRegressor
 from sklearn.pipeline import Pipeline
 from skopt import BayesSearchCV
@@ -8,17 +8,12 @@ import numpy as np
 import os
 from joblib import dump, load
 
-models = [TweedieRegressor(), Ridge(), Lasso(max_iter=10000), ElasticNet(), BayesianRidge(), ARDRegression(), SGDRegressor(), PassiveAggressiveRegressor(), HuberRegressor(), RandomForestRegressor(), AdaBoostRegressor(), BaggingRegressor(), ExtraTreesRegressor(), GradientBoostingRegressor()]
+import warnings
+warnings.filterwarnings('ignore') 
 
 pipe = Pipeline([
     ('model',Ridge())
 ])
-
-tweedie_search = {
-    'model': [TweedieRegressor()],
-    'model__power': (1, 3, 'log-uniform'),
-    'model__alpha': (1e-8, 1e+2, 'log-uniform')
-}
 
 ridge_search = {
     'model': [Ridge()],
@@ -71,7 +66,7 @@ huber_search = {
 
 rf_search = {
     'model': [RandomForestRegressor()],
-    'model__criterion': ['squared_error', 'absolute_error', 'poisson'],
+    'model__criterion': ['squared_error', 'absolute_error'],
     'model__max_leaf_nodes': (20, 50),
     'model__max_depth': (5, 15),
 }
@@ -103,15 +98,24 @@ gb_search = {
     'model__loss': ['huber', 'squared_error', 'absolute_error', 'quantile']
 }
 
-search_grids = [(tweedie_search, 10), (ridge_search, 10), (lasso_search, 10), (elasticnet_search, 10), (bayesianridge_search, 10), (ARD_search, 10), (sgd_search, 10), (pa_search, 10), (huber_search, 10), (rf_search, 10), (adaboost_search, 10), (bagging_search, 10), (extratrees_search, 10), (gb_search, 10)]
+search_grids = [(ridge_search, 10), (lasso_search, 10), (elasticnet_search, 10), (bayesianridge_search, 10), (ARD_search, 10), (sgd_search, 10), (pa_search, 10), (huber_search, 10), (rf_search, 10), (adaboost_search, 10), (bagging_search, 10), (extratrees_search, 10), (gb_search, 10)]
 
-def train_model():
-    path = '../test/'
-    X_train = np.load(os.path.join(path, 'X_train.npy'))
-    X_test = np.load(os.path.join(path, 'X_test.npy'))                                  
-    y_train = np.load(os.path.join(path, 'y_train.npy'))    
-    y_test = np.load(os.path.join(path, 'y_test.npy'))
-                                   
+def train_model(demo):
+    X_train = np.load('test/X_train.npy')
+    X_test = np.load('test/X_test.npy')                                  
+    y_train = np.load('test/y_train.npy')    
+    y_test = np.load('test/y_test.npy')
+    print('Data loaded')
+    
+    if demo == 'demo':
+        models = [Ridge(), PassiveAggressiveRegressor(), ElasticNet()]
+        print('Using demo models')
+    else:
+        models = [Ridge(), Lasso(max_iter=10000), ElasticNet(), BayesianRidge(), ARDRegression(), SGDRegressor(), PassiveAggressiveRegressor(), HuberRegressor(), RandomForestRegressor(), AdaBoostRegressor(), BaggingRegressor(), ExtraTreesRegressor(), GradientBoostingRegressor()]
+        print('Using all models')
+
+    
+    print('Model fitting')
     scores = list()
     for model in models:
         model.fit(X_train, y_train)
@@ -121,7 +125,7 @@ def train_model():
     best_scores = scores[:, 1].argsort()[::-1]
    
     final_grid = list()
-    for i in best_scores:
+    for i in best_scores[:3]:
         final_grid.append(search_grids[i])
 
     opt = BayesSearchCV(
@@ -129,15 +133,16 @@ def train_model():
         final_grid,
         cv=2
     )
+    print('Hyperparameter tuning')
     opt.fit(X_train, y_train)
     best_model = opt.best_estimator_
     
-    path = '../models/'
-    dump(best_model, os.path.join(path, type(best_model).__name__))
+    dump(best_model, 'models/' + type(best_model).__name__)
     
     return 0
 
-train_model()
+var = input()
+train_model(var)
     
         
     

@@ -43,7 +43,7 @@ def add_classification(df, column, new_column, keywords):
 
 def generate_features():
     # Data clean up
-    df = pd.read_csv(r"../data/Salaries.csv", header=0, delimiter=',')
+    df = pd.read_csv('data/Salaries.csv', header=0, delimiter=',')
     
     df = df.drop(['Notes', 'Agency', 'Id', 'Status'], axis=1)
     
@@ -81,8 +81,8 @@ def generate_features():
     df = df[df.JobArea.notna()]
     
     # Job Area
-    womens_names = pd.read_csv(r"../data/babies-first-names-top-100-girls.csv", header=0, delimiter=',')
-    mens_names = pd.read_csv(r"../data/babies-first-names-top-100-boys.csv", header=0, delimiter=',')
+    womens_names = pd.read_csv('data/babies-first-names-top-100-girls.csv', header=0, delimiter=',')
+    mens_names = pd.read_csv('data/babies-first-names-top-100-boys.csv', header=0, delimiter=',')
     
     womens_names.FirstForename = womens_names.FirstForename.str.upper()
     mens_names.FirstForename = mens_names.FirstForename.str.upper()
@@ -114,10 +114,10 @@ def generate_features():
     y_test = scaler.transform(np.array(y_test).reshape(-1, 1)).flatten()
     
     # Saving data
-    np.save(os.path.join(path, 'X_train'), X_train)
-    np.save(os.path.join(path, 'X_test'), X_test)    
-    np.save(os.path.join(path, 'y_train'), y_train)    
-    np.save(os.path.join(path, 'y_test'), y_test)
+    np.save('test/X_train', X_train)
+    np.save('test/X_test', X_test)
+    np.save('test/y_train', y_train)
+    np.save('test/y_test', y_test)
     
     return 0
 
