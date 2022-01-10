@@ -1,0 +1,10 @@
+# Data transformation
+python3 src/generate_features.py
+
+# Model construction and tuning
+python3 src/train_model.py
+demo
+# the full version takes a lot of execution time, so if you just want to try it out, I strongly recommend using the demo version
+
+# Model evaluation
+python3 src/score_model.py
